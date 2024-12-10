@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="TensorFlow.Keras" Version="0.15.0" />
+		<PackageReference Include="TensorFlow.NET" Version="0.150.0" />
+		<PackageReference Include="Hardware.Info" Version="101.0.0" />
+	</ItemGroup>
+
+	<!--FOR CPU Version Both Win&Linux-->
+	<ItemGroup>
+		<PackageReference Include="SciSharp.TensorFlow.Redist" Version="2.16.0" />
+	</ItemGroup>
+
+	<!--FOR CPU Version for MacOS-->
+	<!--<ItemGroup Condition="'$(OS)' == 'OSX'">
+		<PackageReference Include="SciSharp.TensorFlow.Redist-OSX" Version="2.15.0" />
+	</ItemGroup>-->
+
+	<!--FOR GPU Version FOR Win-->
+	<!--<ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+		<PackageReference Include=" SciSharp.TensorFlow.Redist-Windows-GPU" Version="2.10.3" />
+	</ItemGroup>-->
+
+	<!--FOR GPU Version For Linux-->
+	<!--<ItemGroup Condition="'$(OS)' == 'Linux'">
+		<PackageReference Include="SciSharp.TensorFlow.Redist-Linux-GPU" Version="2.11.1" />
+	</ItemGroup>-->
+</Project>

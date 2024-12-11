@@ -3,6 +3,7 @@ using Tensorflow.Keras;
 using Tensorflow.Keras.Engine;
 using Tensorflow.Keras.Layers;
 using Tensorflow.NumPy;
+using Tensorflow.Util;
 
 class FaceMaskModel
 {
@@ -12,28 +13,7 @@ class FaceMaskModel
 
     private IModel model { get; set; }
 
-
-
-    //private void IntilizeModel()
-    //{
-    //    var inputs = layers.Input((150, 150, 3), name: "Input");
-    //    var conv1 = layers.Conv2D(32, (3, 3), activation: "relu", padding: "same").Apply(inputs);
-    //    var pool1 = layers.MaxPooling2D((2, 2)).Apply(conv1);
-    //    var pooling = layers.MaxPooling2D(2, 2).Apply(pool1);
-
-
-    //    var flat1 = layers.Flatten().Apply(pool2);
-
-
-    //    var dense1 = layers.Dense(512, activation: "relu").Apply(concat);
-    //    var dense2 = layers.Dense(128, activation: "relu").Apply(dense1);
-    //    var dense3 = KerasApi.keras.layers.Dense(10, activation: "relu").Apply(dense2);
-    //    //var output = layers.Softmax(-1).Apply(dense3);
-    //    var output = layers.HardSigmoid().Apply(dense3);
-    //    model = Binding.tf.keras.Model(inputs, output);
-
-    //    model.summary();
-    //}
+    private bool isCompiled = false;
 
     /// <summary>
     /// Build You model
@@ -86,32 +66,36 @@ class FaceMaskModel
     /// </summary>
     /// <param name="xTrain"></param>
     /// <param name="yTrain"></param>
+    /// <param name="epoch"></param>
+    /// <param name="validData"></param>
     /// <param name="classWeight"></param>
     /// <returns></returns>
-    public ICallback Train(NDArray xTrain, NDArray yTrain, Dictionary<int, float> classWeight = null)
+    public ICallback Train(NDArray xTrain, NDArray yTrain,int epoch,
+        ValidationDataPack validData =null ,    
+            Dictionary<int, float> classWeight = null)
     {
+
+        if (!isCompiled) throw new InvalidOperationException("Please call `Compile` method before Training");
+
         // training
         //model.fit(xTrain[new Slice(0, 2000)], yTrain[new Slice(0, 2000)],
         return model!.fit(xTrain, yTrain,
             batch_size: 64,
-            epochs: 10,
-            validation_split: 0.2f,
+            epochs: epoch,
+            validation_split: validData is null ? 0.2f : 0.0f,
+            validation_data:validData,
             class_weight: classWeight
-            //,validation_data:new ValidationDataPack()
             );
     }
 
     public ICallback Train(IDatasetV2 xTrain, IDatasetV2 valid=null)
     {
         // training
-        //model.fit(xTrain[new Slice(0, 2000)], yTrain[new Slice(0, 2000)],
         return model!.fit(xTrain,batch_size:64,epochs:10,validation_data:valid);
-
-            //,validation_data:new ValidationDataPack()
     }
 
     /// <summary>
-    /// Summary of Model trainned
+    /// Summary of Model trained
     /// </summary>
     /// <exception cref="NullReferenceException"></exception>
     public void Summary()
@@ -127,13 +111,15 @@ class FaceMaskModel
     /// </summary>
     public void Compile()
     {
+        isCompiled = true;
         if (model is null)
             throw new NullReferenceException("First call `BuildModel` Method to INITIALIZED the model object");
 
         model!.compile(optimizer: keras.optimizers.RMSprop(1e-3f),
-            loss: keras.losses.BinaryCrossentropy(from_logits: false),
-            // keras.losses.CategoricalCrossentropy(from_logits: false), // SparseCategoricalCrossentropy(from_logits: true),
-            metrics: [keras.metrics.BinaryAccuracy() ,keras.metrics.CategoricalAccuracy(), keras.metrics.CategoricalCrossentropy()]); //new[] { "acc" }); // //
+            loss: keras.losses.BinaryCrossentropy(from_logits: false,name:"binCross"),
+            metrics: [keras.metrics.BinaryAccuracy(name:"binAcc") ,keras.metrics.Recall()
+                //keras.metrics.SparseCategoricalAccuracy(name:"sparCateAcc"),
+            ]); //new[] { "acc" }); // //
     }
 
     /// <summary>
@@ -154,11 +140,21 @@ class FaceMaskModel
     /// <param name="value"></param>
     /// <param name="verbose"></param>
     /// <returns>Tensor of size No. of Example * labelNumber</returns>
-    public Tensor Predict(Tensor value, int verbose = 0)
+    public List<int> Predict(Tensor value, int verbose = 0)
     {
         // var c = confusion_matrix;
-        var result = model.predict(value, verbose: verbose);
-        return Binding.tf.arg_max(result, 1);
+        var predict = model.predict(value, verbose: verbose);
+        
+        //var result =  Binding.tf.sigmoid(predict);
+        //var l = predict.numpy().ToList();
+        var z = predict.numpy().ToArray<float>();
+        //var a = predict.numpy().ToMultiDimArray<float>();
+        //foreach (var x in predict.numpy())
+        //{
+        //    Console.WriteLine(x[0].ToString());
+        //}
+        var r = z.Select(x => x > 0.5 ? 1 : 0).ToList();
+        return r;
     }
 
     /// <summary>
@@ -172,7 +168,7 @@ class FaceMaskModel
             throw new NullReferenceException("Please Provide the Path");
 
         model = Binding.tf.keras.models.load_model(modelPath);
-        Console.WriteLine("Loding Model...");
+        Console.WriteLine("Loading Model...");
         model.summary();
         Compile();
     }

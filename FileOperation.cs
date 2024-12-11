@@ -44,6 +44,25 @@ class FileOperation(int imgH,int  imgW,int nChannels=1)
 
     }
     
+    public (NDArray xDataArray, NDArray yDatArray) LoadFromDir(string path, string process)
+    {
+        List<string> imagesPath = [];
+        List<int> labels = [];
+
+        foreach ((int inx, string label) x in new[] { (0, "Mask"), (1, "Non MASK") })
+        {
+            //Find Total Files in Specific Label
+            var files = Directory.GetFiles(Path.Combine(path, x.label));
+            imagesPath.add(files);
+            labels.add(Enumerable.Repeat(x.inx, files.Length));
+        }
+
+        NDArray xDataArray = np.zeros((imagesPath.Count, imgH, imgW, nChannels), dtype: TF_DataType.TF_FLOAT);
+        LoadImage(imagesPath, xDataArray, process);
+        NDArray yDatArray = np.array(labels.ToArray());
+
+        return (xDataArray, yDatArray);
+    }
 
     public Dictionary<string, string[]> GetImagePath(string path)
     {

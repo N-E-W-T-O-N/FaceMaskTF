@@ -1,4 +1,4 @@
-using Tensorflow;
+﻿using Tensorflow;
 using Tensorflow.NumPy;
 class FileOperation(int imgH,int  imgW,int nChannels=1)
 {
@@ -76,12 +76,26 @@ class FileOperation(int imgH,int  imgW,int nChannels=1)
         return dict;
     }
 
-    public void CreateImage(Dictionary<string, List<float>> history, string path)
+    public Dictionary<string, NDArray> LoadImage(string path,string process)
     {
+        Dictionary<string, NDArray> dict = new ();
 
-        foreach (var (name, data) in history)
+        foreach (var x in new[] { "Mask", "Non MASK" })
         {
 
+            var files=  Directory.GetFiles(Path.Combine(path, x));
+            NDArray nd = np.zeros((files.Length, imgH, imgW, nChannels), dtype: TF_DataType.TF_FLOAT);
+            LoadImage(files, nd, process);
+
+            dict.Add(x, nd);
         }
+
+        return dict;
+
+
+    }
+    public void CreateImage(NDArray array, string name)
+    {
+        Binding.tf.image.encode_jpeg(array, name);
     }
 }

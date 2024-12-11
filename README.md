@@ -1,6 +1,7 @@
 # FaceMask Detaction Model
 
-The Dataset is download from KAGGLE [here](https://www.kaggle.com/datasets/prithwirajmitra/covid-face-mask-detection-dataset)
+Implemented Tensorflow in C# on following FaceMask dataset.
 
-Run the script [dataset.sh](#dataset.sh)
+The Dataset can be download from [here](https://www.kaggle.com/datasets/prithwirajmitra/covid-face-mask-detection-dataset)
 
+Run the script [`Dataset.sh`](./Dataset.sh) or [`Dataset.ps1`](./Dataset.ps1).

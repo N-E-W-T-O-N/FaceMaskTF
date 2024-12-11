@@ -1,21 +1,11 @@
-﻿using Tensorflow;
+using Tensorflow;
 using Tensorflow.NumPy;
-
-class FileOperation
+class FileOperation(int imgH,int  imgW,int nChannels=1)
 {
-    public void LoadImage(string[] a, NDArray b, string process)
+    public void LoadImage(IList<string> a, NDArray b, string process)
     {
-        //var graph = tf.Graph().as_default();
-
-        //for (int i = 0; i < a.Length; i++)
-        //{
-        //    b[i] = ReadTensorFromImageFile(a[i], graph);
-        //    Console.Write($"Loading image: {i} {a[i]}...");
-        //    Console.CursorLeft = 0;
-        //}
-        // graph.Exit();
-        // Faster Approch
-        Parallel.For(0, a.Length, (i) =>
+        // Faster Approach
+        Parallel.For(0, a.Count, (i) =>
         {
             try
             {
@@ -29,7 +19,7 @@ class FileOperation
         });
 
         Console.WriteLine();
-        Console.WriteLine($"Loaded {a.Length} images for " + process);
+        Console.WriteLine($"Loaded {a.Count} images for " + process);
     }
 
     private NDArray ReadTensorFromImageFile(string fileName, Graph graph)

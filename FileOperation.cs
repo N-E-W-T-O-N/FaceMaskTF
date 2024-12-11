@@ -31,18 +31,19 @@ class FileOperation(int imgH,int  imgW,int nChannels=1)
         var cast = Binding.tf.cast(decodeImage, Binding.tf.float32, "cast");
 
         //resize required one extra dims
-        var dims_expander = Binding.tf.expand_dims(cast, 0);
+        var dimsExpander = Binding.tf.expand_dims(cast, 0,"expend");
 
-        var resize = Binding.tf.constant(new int[] { 32, 32 }, name: "resize");
+        var resize = Binding.tf.constant(new int[] { imgH, imgW }, name: "resize");
 
-        var bilinear = Binding.tf.image.resize_bilinear(dims_expander, resize);//(dims_expander, resize);
-        var sub = Binding.tf.subtract(bilinear, new float[] { 0 });
-        var normalized = Binding.tf.divide(sub, new float[] { 255 });
+        var bilinear = Binding.tf.image.resize_bilinear(dimsExpander, resize);//(dims_expander, resize);
+        var sub = Binding.tf.subtract(bilinear, new float[] { 0 },name:"mean");
+        var normalized = Binding.tf.divide(sub, new float[] { 255 },"SD");
 
         var sess = Binding.tf.Session(graph);
         return sess.run(normalized);
 
     }
+    
 
     public Dictionary<string, string[]> GetImagePath(string path)
     {
